@@ -1,0 +1,7 @@
+{
+  "name": "auto-compact",
+  "version": "0.1.0",
+  "description": "Archives every compacted span to .claude/handoffs, re-injects a pointer after compaction, warns before the context fills, and lets you tune the auto-compact threshold.",
+  "author": { "name": "alshahia" },
+  "license": "MIT"
+}
