@@ -1,6 +1,7 @@
 // PreCompact: write the verbatim conversation to <project>/.claude/handoffs/<session>/
 import fs from 'node:fs'
 import path from 'node:path'
+import { buildBrief, buildTail, buildTurnIndex } from './brief.mjs'
 import { readStdin, loadConfig, transcriptLines, textOf, sessionDir } from './lib.mjs'
 
 const input = readStdin()
@@ -29,7 +30,11 @@ ${t}
   // newest messages up to ~retainTokens (4 chars/token), kept verbatim for re-injection
   let budget = cfg.retainTokens * 4, tail = []
   for (let i = msgs.length - 1; i >= 0 && budget > 0; i--) { tail.unshift(msgs[i].length > budget ? msgs[i].slice(-budget) : msgs[i]); budget -= msgs[i].length }
-  fs.writeFileSync(path.join(dir, 'latest-tail.md'), `# Verbatim tail (~${cfg.retainTokens} tokens) before compaction\n\n${tail.join('\n')}`)
+  fs.writeFileSync(path.join(dir, 'latest-tail-raw.md'), `# Verbatim tail (~${cfg.retainTokens} tokens) before compaction\n\n${tail.join('\n')}`)
+  fs.writeFileSync(path.join(dir, 'latest-tail.md'), `# Tail digest (~${cfg.tailTokens} tokens; tool output dropped; full tail in latest-tail-raw.md)\n\n${buildTail(input.transcript_path, cfg.tailTokens)}`)
+  fs.writeFileSync(path.join(dir, 'brief.auto.md'), buildBrief(input.transcript_path, { maxChars: cfg.briefTokens * 4 }))
+  fs.writeFileSync(path.join(dir, 'turns.md'), buildTurnIndex(input.transcript_path))
+  fs.rmSync(path.join(dir, '.checkpoint-asked'), { force: true })
   fs.appendFileSync(path.join(dir, 'index.md'), `- ${stamp} (${input.trigger || 'compact'}): ${path.basename(file)} — ${n} messages\n`)
   if (cfg.archive.gitIgnore) {
     const gi = path.join(cwd, '.gitignore'), line = cfg.archive.root.replace(/\\/g, '/') + '/'

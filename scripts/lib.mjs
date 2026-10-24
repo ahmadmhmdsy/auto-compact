@@ -6,6 +6,9 @@ export const DEFAULTS = {
   enabled: true,
   contextWindow: 120000, // auto-compact fires at this many tokens (CLAUDE_CODE_AUTO_COMPACT_WINDOW)
   retainTokens: 20000,   // tail of the conversation re-surfaced verbatim after compaction
+  tailTokens: 5000,      // trimmed digest of the tail that is re-read after compaction (full tail stays on disk)
+  briefTokens: 2000,     // size cap of the always-loaded brief injected after compaction
+  checkpointRatio: 0.70, // once per cycle, ask the model to write brief.md above this fraction
   warnRatio: 0.85,       // warn above this fraction of contextWindow
   archive: { root: '.claude/handoffs', gitIgnore: true },
 }
